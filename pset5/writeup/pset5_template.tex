@@ -1,0 +1,200 @@
+
+%
+% 6.869 problem set 5
+%
+\documentclass[12pt,twoside]{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{color}
+\usepackage{clrscode}
+\usepackage[pdftex]{graphicx}
+
+\input{macros}
+
+\setlength{\oddsidemargin}{0pt}
+\setlength{\evensidemargin}{0pt}
+\setlength{\textwidth}{6.5in}
+\setlength{\topmargin}{0in}
+\setlength{\textheight}{8.5in}
+
+\newcommand{\theproblemsetnum}{5}
+\newcommand{\partaduedate}{Oct 9, 2014 (1:00pm)}
+\newcommand{\collabs}{Collaborators: None}
+\newcommand{\tabUnit}{3ex}
+\newcommand{\tabT}{\hspace*{\tabUnit}}
+
+\title{6.869 PSET 5}
+
+\begin{document}
+
+\handout{Problem Set \theproblemsetnum}{Oct 9, 2014 (1:00pm)}
+\tabT Resources with corresponding images and code are on Stellar under \texttt{andrewmo@mit.edu}.  The files are in the \texttt{pset5.zip} folder.  To reproduce the below figures, run \texttt{Prob1.m} and \texttt{pset5\_2main.m}.
+
+
+\section*{Problem 5.1}
+\tabT In this problem, I implemented the belief propagation algorithm for contstructing dense stereo correspondence.  This utilized disparities of up to L=10 pixels.  Below are the steps taken to achieve the desired results.
+
+\textbf{(A)} The data term is represented as $\phi(x_{i}|y_{i}^{l}, y_{i}^{r}) \propto exp(-\lambda|y_{i}^{l} - y_{i-x_{i}}^{r}|)$
+\newline
+\tabT\tabT\tabT \textbf{Code:} \texttt{D(y,x,l) = exp(-lambda*abs(y\_l - y\_r));}
+\newline
+
+\textbf{(B)} The smoothness term is represented as $\psi(x_{i}, x_{i+1}) \propto exp(-|x_{i} - x_{i+1}|)$
+\newline
+\tabT\tabT\tabT \textbf{Code:} \texttt{P(l1,l2) = exp(-abs(dx1-dx2));}
+\newline
+
+\textbf{(C)} Below is the hidden Markov model used in this assignment.
+
+\begin{center}
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+    \includegraphics[scale=.5]{markov} 
+\end{center}
+
+The gray nodes are observed pixels, and the white nodes are the disparity that we wish to infer.  Messages from node j to node i were computed as follows: $m_{ji}(x_{i}) = \sum\limits_{x_{j}} \psi_{ij}(x_i, x_j) \prod\limits_{k \in \eta(j)/i} m_{kj}(x_j)$ 
+\newline
+It was key to note that the message from the observed state was the data term.  As a result, the generic form of calculting messages in code is shown below:
+\newline
+\tabT\tabT\tabT \textbf{Code:} \texttt{ P * [D(y,x,:) .* msgs\_sumprod(y,x,DIRECTION,:)]; }
+\newline
+
+\textbf{(D)} We cane find the marginal probability by using the messages computed earlier as follows:
+\newline
+\begin{center}
+$p(x|y^l, y^r) = \frac{1}{Z} \prod\limits_{i=1}^{N} \phi(x_{i}|y_{i}^{l}, y_{i}^{r}) \psi(x_{i}, x_{i+1}) = \prod\limits_{j \in \eta{i}} m_{ji}(x_i)$
+\end{center}
+
+In summary, each marginal is computed using incoming messages from the top, left, and right neighboring nodes.
+\newline
+
+\textbf{(E)} Computing the mean was finding the expectation for each pixel using both the disparities and their marginal probabilities.  This was calculated as $\sum\limits_{l} lP(x_i = l)$.  
+\newline
+
+\textbf{(F)} Below are the plots for the marginals of the green and red pixel.  
+\newline
+
+\hspace{-70pt}
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+    \includegraphics[scale=.4]{5_1d} 
+
+The marginals at an edge pixel has very high probability since that's where the largest change in data occurs.  The green pixel is further from an edge, put when the disparity is large enough that it reaches an edge, the probability marginal has a significant spike at that point.  On the otherhand, the red pixel is on an edge.  Therefore small disparities either to the right or left of the pixel will show noticeable spikes in its left and right marginals (however, not as large).
+\newline
+
+\textbf{(G)} Mean and MAP estimates of the disparity for $\lambda = .2$ for scanline 61 (MAP explained in (j)):  
+\newline 
+
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+    \includegraphics[scale=.3]{5_1e}
+
+\textbf{(H)} Mean and MAP estimates of the disparity for $\lambda = 0,.1,.5,1$ respectively:  
+\newline 
+
+
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+	\hspace{-40pt}
+    \includegraphics[scale=.18]{5_1lambda0_b}
+    \includegraphics[scale=.18]{5_1lambda1_b} \newline
+
+    \hspace{-40pt}
+    \includegraphics[scale=.18]{5_1lambda5_b}
+    \includegraphics[scale=.18]{5_1lambdaOne_b} \newline
+
+The top two plots show that decreasing $\lambda$ generates a more uniform mean estimate to the disparity, where as the bottom two plots show that increasing $\lambda$ generates a mean estimate that has more spikes and less uniform.  This is because $\lambda$ determines the weight we place on the difference in disparities.  The higher $\lambda$, the stronger the weights are applied, and therefore the more likley the results vary.
+\newline
+
+\textbf{(I)} Mean and MAP disparity as an image:  
+\newline
+
+\hspace{-70pt}
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+    \includegraphics[scale=.4]{5_1g}
+
+\textbf{(J)} Calculating the MAP estimate required an update to the message update equation.  Instead of doing a sum, do a max operation:  
+\newline
+
+\begin{center}
+$m_{p \to q}(x_q) = max_{x_p} \phi(x_p) \psi(x_p, x_q) \prod\limits_{s \in \eta{p}/q} m_{s \to p}(x)$
+\end{center}
+
+Then computing the MAP estimate is the \texttt{arg\_max} index out of the largest marginal probabilities, given you the disparity that produces the max marginal.  From part G, we see that there is a difference bewteen the Mean and MAP estimates.  The MAP estimate tends to have a higher average and more smooth compared to the Mean estimate.  Also, the MAP is more step-like where as the Mean is more sporadic.
+\newline
+
+\textbf{Visualization:} For convenience, this is a complete small version of the ouput for \texttt{Prob1.m}
+\newline
+
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+    \includegraphics[scale=.15]{5_1a}
+    \includegraphics[scale=.15]{5_1b} \newline
+    \includegraphics[scale=.15]{5_1c}
+    \includegraphics[scale=.15]{5_1d} \newline
+    \includegraphics[scale=.15]{5_1e}
+    \includegraphics[scale=.15]{5_1f} \newline
+    \includegraphics[scale=.15]{5_1g}
+
+
+\section*{Problem 5.2}
+\tabT In this problem, I implemented the Efros and Leung algorithm for texture synthesis.  I followed pseudocode provided at \texttt{http://graphics.cs.cmu.edu/people/efros/research/NPS/alg.html}.  It is repeated below for convenience.
+\newline
+
+\texttt{
+function GrowImage(SampleImage,Image,WindowSize) \newline
+\tabT\tabT  while Image not filled do\newline
+\tabT\tabT\tabT    progress = 0\newline
+\tabT\tabT\tabT    PixelList = GetUnfilledNeighbors(Image)\newline
+\tabT\tabT\tabT    foreach Pixel in PixelList do\newline
+\tabT\tabT\tabT\tabT     Template = GetNeighborhoodWindow(Pixel)\newline
+\tabT\tabT\tabT\tabT     BestMatches = FindMatches(Template, SampleImage)\newline
+\tabT\tabT\tabT\tabT     BestMatch = RandomPick(BestMatches)\newline
+\tabT\tabT\tabT\tabT     if (BestMatch.error < MaxErrThreshold) then\newline
+\tabT\tabT\tabT\tabT\tabT      Pixel.value = BestMatch.value\newline
+\tabT\tabT\tabT\tabT\tabT     progress = 1\newline
+\tabT\tabT\tabT\tabT    end\newline
+\tabT\tabT\tabT   end\newline
+\tabT\tabT\tabT   if progress == 0 \newline
+\tabT\tabT\tabT\tabT    then MaxErrThreshold = MaxErrThreshold * 1.1\newline
+\tabT\tabT end\newline
+\tabT\tabT return Image\newline
+\tabT end\newline
+}
+\newline
+
+Although I have a slightly different implementation, the two main functions that was needed to be constructed was \texttt{SynthTexture} and a subroutine called \texttt{FindMatches}.
+\newline
+
+\begin{center}
+\hspace{100pt}
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+    \includegraphics[scale=1, trim = 0pt 0pt 0pt 0pt, clip]{rings}\newline
+\end{center}
+
+Below are the results of running the texture \texttt{rings.jpg} (shown above) using window widths $w=5,7,13, s = [100,100]$ and an initial starting seed of $(x,y) = (4,32)$.
+
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+	\hspace{-70pt}
+    \includegraphics[scale=1, trim = 0pt 150pt 0pt 100pt, clip]{5_2a}\newline
+
+Here we see that the performance increases as the window size gets larger.  When $w = 13$, the texture looks like the original.  For smaller window sizes, only few of the dots are formed.  Below shows the results iterating over a particular window size with the same starting seed. 
+
+	\hspace{-20pt}
+    \includegraphics[scale=1, trim = 60pt 150pt 0pt 100pt, clip]{5_2b}\newline
+    \includegraphics[scale=1, trim = 60pt 150pt 0pt 100pt, clip]{5_2c}\newline
+    \includegraphics[scale=1, trim = 60pt 150pt 0pt 100pt, clip]{5_2d}\newline
+
+We see for the smaller window sizes, running the algorithm multiple times with the same starting seeds had different results, this is because as the texture is getting generated, the source texture is contstantly estimating each pixel based on the prior estimated pixel.  Therefore, as the algorithm is incrementally adding pixels, it has to decide whether to complete an edge or not.  Since the window size is smaller, the adjusted rings texture has edges on the borders.  On the otherhand, the results for $w=13$ look similar.  Perhaps this is because the window is large enough that it can be repeated based on the borders of the original source texture and not estimating whether to continue/end on edge of a ring. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}

@@ -1,0 +1,195 @@
+
+%
+% 6.869 problem set 3
+%
+\documentclass[12pt,twoside]{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{color}
+\usepackage{clrscode}
+\usepackage[pdftex]{graphicx}
+
+\input{macros}
+
+\setlength{\oddsidemargin}{0pt}
+\setlength{\evensidemargin}{0pt}
+\setlength{\textwidth}{6.5in}
+\setlength{\topmargin}{0in}
+\setlength{\textheight}{8.5in}
+
+\newcommand{\theproblemsetnum}{3}
+\newcommand{\partaduedate}{Sept 25, 2014 (1:00pm)}
+\newcommand{\collabs}{Collaborators: None}
+\newcommand{\tabUnit}{3ex}
+\newcommand{\tabT}{\hspace*{\tabUnit}}
+
+\title{6.869 PSET 3}
+
+\begin{document}
+
+\handout{Problem Set \theproblemsetnum}{Sept 25, 2014 (1:00pm)}
+\tabT Resources with corresponding images and code are on Stellar under \texttt{andrewmo@mit.edu}.  The files are in the \texttt{pset3.zip} folder.  To reproduce the below figures, run \texttt{pset3main.m}.
+
+
+\section*{Problem 1}
+\tabT \textbf{(A)} The data provided is sampled at wavelengths $[360: 5: 730]nm$. A set of primaries $p_i(\lambda)$ is associated with a set of color matching functions $c_i(\lambda)$ if
+\newline
+\newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT$\sum_{i} (p_i(\lambda) \sum_{\lambda_{i}} c_i(\lambda_{1}) s(\lambda_{1}))$
+\newline
+
+\tabT \textbf{(i)} To compute the color matching functions asociated with those specified by the RGB primaries, we use the provided transformation matrix $T$ on the XYZ color function matrix $C_{XYZ}$.  Therefore, $C_{RGB} = T \times C_{XYZ}$.
+
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+    \includegraphics[width = 200pt, trim = 50pt 50pt 50pt 50pt, clip]{C_CIE} 
+    \tabT\tabT \includegraphics[width = 200pt, trim = 50pt 50pt 50pt 50pt, clip]{C_RGB}
+
+For the XYZ colorspace, notice how none of the color mathcing functions are negative.  This is because XYZ space basically normalizes the RGB space.
+For the RGB colorpsace, some of the color matching functions are negative.  This means that some primaries need to be added to the sample space in addtion to combining the primaries in order to get a correct color matching.
+\newline
+
+
+
+For the following problems, we need to find the primary light spectra associated with the color function matrices.
+\newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT$s = Ct$ \newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT$t = Ps$ \newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT$PCs = s$ \newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT$PC = I$ \newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT$P = C^{-1}$ \newline
+\newline
+In other words, the primary light spectra $P$ is the psedo-inverse of the color function matrix $C$ since $C$ can be an underdetermined system and $PC = I$.  Below are the light spectras for RGB (\textbf{a.ii}) and XYZ (\textbf{a.iii}), respectively.
+\newline
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+\begin{tabular}{ c c }
+ \includegraphics[width = 200pt, trim = 50pt 50pt 50pt 50pt, clip]{P_RGB} 
+ & \includegraphics[width = 200pt, trim = 50pt 50pt 50pt 50pt, clip]{P_XYZ} \\
+\end{tabular}
+
+For both the RGB and XYZ spectras, the primaries have negative values in some areas because the color functions matrix $C$ is an underdetermined system with multiple solutions.  That is why we took the pseudoinverse rather than just the inverse.
+\newline
+
+\tabT \textbf{(b)} For the spectral response curves for the eye photreceptors, we find the primary light spectra again by taking the psuedoinverse of $LMSResponse$ matrix.  As a result we get the following primary light spectra.
+\newline
+
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT 
+\includegraphics[width = 200pt, trim = 50pt 50pt 50pt 50pt, clip]{P_LMSR} 
+
+By definition on the construction of this primary spectra, we can confirm that this is a valid set of primaries and satisfies Equation 1.  We notice that much of the spectrum has values that are very negative.
+\newline
+
+\tabT \textbf{(c)} If the spectral response curves of the eye (assumed to be non-negative) were orthogonal to each other (with a zero dot product), there would exist a corresponding set of primaries with power spectra that were non-negative.  This can be shown by the following.  Let $C_{LMSR}$ correspond to the spectral response composed of orthogonal columns.  Since the basis of this matrix is orthaganal to each other, $C_{LMSR}^{-1} = C_{LMSR}^{T}$.  This means that the power spectra to the LMSR is non-negative as well since it is the transpose of the spectral response matrix which is also non-negative. $P_{LMSR} = C_{LMSR}^{-1} = C_{LMSR}^{T}$. 
+\newline
+
+
+\section*{Problem 2}
+\tabT \textbf{(A)} Below represents the a single layer neural network and the XOR dataset.  The sigmoid $\sigma(a)$ activation function has $0.5$ as the threshold (1 if $a \geq 0.5$, 0 if $a < 0.5$).
+\newline
+\newline
+
+\begin{center}
+\tabT\tabT\tabT\textbf{Single Layer Network}
+\tabT\tabT\tabT \textbf{XOR dataset}
+\newline
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+\includegraphics[width = 100pt]{XOR_singleL}
+\tabT\tabT\tabT
+\includegraphics[width = 100pt]{XOR_logical}
+\end{center}
+
+\tabT A single layer network cannot classify the XOR dataset correctly because the data is not linearly separable.  You need at least two lines to separate the points (0,1)(1,0) from (0,0)(1,1).  This can be proven by examining the below constraints on the output node with all possible inputs.
+\newline
+\newline
+$(0)w_{1} + (0)w_{2} < y$, \tabT\tabT $y > 0$ \newline
+$(0)w_{1} + (1)w_{2} \geq y$, \tabT\tabT $w_{2} \geq 0.5$ \newline
+$(1)w_{1} + (0)w_{2} \geq y$, \tabT\tabT $w_{1} \geq 0.5$ \newline
+$(1)w_{1} + (1)w_{2} < y$, \tabT\tabT $w_{1} + w_{2} < 0.5$, \tabT\tabT
+Contradiction: $0.5 + 0.5 \nless 0.5$ 
+\newline
+\newline
+Last constraint fails and contradicts the prior constraints.  Since, at best, one classification fails out of the four, the best theoretical error is $.25$.
+\newline
+
+\textbf{(B)} Below represents the a hidden layer neural network for the XOR dataset.
+\newline
+
+\begin{center}
+\tabT\tabT\tabT\tabT\tabT\textbf{Hidden Layer Network}
+\newline
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+\includegraphics[width = 120pt]{XOR_hiddenL}
+\end{center}
+$a_{3} = w_{13}x_{1} + w_{23}x_{2} + b_{3}$, \tabT\tabT
+$z_{3} = \sigma(a_{3})$, \tabT\tabT
+$E = \frac{1}{2}(z_{5} - t)^2$
+\newline
+$a_{4} = w_{14}x_{1} + w_{24}x_{2} + b_{4}$, \tabT\tabT
+$z_{4} = \sigma(a_{4})$, \tabT\tabT
+$\sigma(x) = \frac{1}{1+e^{-x}}$
+\newline
+$a_{5} = w_{35}z_{3} + w_{45}z_{4} + b_{5}$, \tabT\tabT
+$z_{5} = a_{5}$, \tabT\tabT\tabT
+$\frac{\partial \sigma(x)}{\partial x} = \frac{e^x}{(1+e^{x})^2}$
+\newline
+\newline
+\tabT\textbf{(i)} With the initialization that all weights $w_{ij} = 1$ and biases $b_{i} = 0$, calcuate the output and error using $(x_{1} = 0, x_{2} = 0)$.
+\newline
+\tabT \textbf{Output} $= z_{5} = a_{5} = w_{35}z_{3} + w_{45}z_{4} + b_{5}$
+$= (1)\sigma(a_{3}) + (1)\sigma(a_{4}) = \frac{1}{1+e^{-0}} + \frac{1}{1+e^{-0}} = \frac{1}{2} + \frac{1}{2} = 1$
+\newline
+\tabT \textbf{Error} $= \delta_{5} = (z_{5} - t_{5}) = 1 - 0 = 1$
+\newline
+\newline
+\tabT\textbf{(ii)} $\frac{\partial E}{\partial w_{35}} = \delta_{5}z_{3} = (z_{5} - t_{5})z_{3} = (1)z_{3} = \sigma(a_{3}) = \sigma(0) = \frac{1}{1+e^{-0}} = \frac{1}{2}$
+\newline
+\newline
+\tabT\textbf{(iii)} $\frac{\partial E}{\partial w_{13}} = \delta_{3}z_{1} = (h'(a_{3})\sum_{k} w_{35}\delta_{k})x_{1} = \frac{e^x}{(1+e^{x})^2}w_{35}(z_{5}-t)x_{1} = \frac{1}{4}(1)(1)(0) = 0$
+\newline
+\newline
+\tabT\textbf{(iv)} Show updated weights using $w_{ij} = w_{ij} - \eta\frac{\partial E}{\partial w_{ij}}$.  Below is the process of backpropogation, refer to last column of last table for updated weights after learning from $(x_{1} = 0, x_{2} = 1, y=1)$ and using $\eta = .1$
+\newline
+\newline
+\begin{center}
+  \begin{tabular}{ c | c | c }
+    $node_{j}$ & $a_{j}$ & $z_{j}$ \\ \hline
+    3 & 0+1=1 & $\frac{1}{1+e^{-1}} = .73$ \\
+    4 & 0+1=1 & $\frac{1}{1+e^{-1}} = .73$ \\
+    5 & .73+.73 = 1.46 & 1.46 \\
+  \end{tabular}
+\end{center}
+\begin{center}
+  \begin{tabular}{ c | c | c }
+    $node_{j}$ & $\delta$ & $\delta_{j}$ \\ \hline
+    5 & $z_{5}-t$ & 1.46-1 = .46 \\
+    4 & $h'(a_{4})\sum_{k} w_{4k}\delta_{k} = \frac{e^{a_{4}}}{(1+e^{a_{4}})^2}w_{45}\delta_{5}$ & $\frac{e}{(1+e)^2}(1)(.46) = (.2)(.46) = .09$ \\
+    3 & $h'(a_{3})\sum_{k} w_{3k}\delta_{k} = \frac{e^{a_{3}}}{(1+e^{a_{3}})^2}w_{35}\delta_{5}$ & $\frac{e}{(1+e)^2}(1)(.46) = (.2)(.46) = .09$ \\
+  \end{tabular}
+\end{center}
+\begin{center}
+  \begin{tabular}{ c | c | c }
+    $node_{ij}$ & $gradient$ & $\frac{\partial E}{\partial w_{ij}}$ \\ \hline
+    35 & $z_{3}\delta_{5}$ & .73(.46) = .34 \\
+    45 & $z_{4}\delta_{5}$ & .73(.46) = .34 \\
+    13 & $z_{1}\delta_{3}$ & 0(.09) = 0 \\
+    14 & $z_{1}\delta_{4}$ & 0(.09) = 0 \\
+    23 & $z_{2}\delta_{3}$ & 1(.09) = .09 \\
+    24 & $z_{2}\delta_{4}$ & 1(.09) = .09 \\
+  \end{tabular}
+\end{center}
+\begin{center}
+  \begin{tabular}{ c | c | c }
+    $w_{ij}$ & $w_{ij}^{-} - \eta\frac{\partial E}{\partial w_{ij}}$ & $w_{ij}^{+}$ \\ \hline
+    35 & 1-(.1)(.34) & .97 \\
+    45 & 1-(.1)(.34) & .97 \\
+    13 & 1-(.1)(0) & 1 \\
+    14 & 1-(.1)(0) & 1 \\
+    23 & 1-(.1)(.09) & .991 \\
+    24 & 1-(.1)(.09) & .991 \\
+  \end{tabular}
+\end{center}
+
+\textbf{(C)} Backpropagation is \textbf{not} gauranteed to find the optimal solution.  According to \textit{Back Propagation is Sensitive to Initial Conditions} by Kolen and Pollack, the algorithm is a heuristic that will find a local optimum but not necessarily the global optimum.  It is the initial weights that decides which local optimum it will find and no overall seach can be done to find the optimal set of weights.  Therefore, backpropagation depends on the training set and initial conditions, which may not necessarily find the best solution. 
+
+\end{document}

@@ -1,0 +1,259 @@
+
+%
+% 6.869 problem set 8
+%
+\documentclass[12pt,twoside]{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{color}
+\usepackage{clrscode}
+\usepackage[pdftex]{graphicx}
+
+\input{macros}
+
+\setlength{\oddsidemargin}{0pt}
+\setlength{\evensidemargin}{0pt}
+\setlength{\textwidth}{6.5in}
+\setlength{\topmargin}{0in}
+\setlength{\textheight}{8.5in}
+
+\newcommand{\theproblemsetnum}{8}
+\newcommand{\partaduedate}{Nov 20, 2014 (1:00pm)}
+\newcommand{\collabs}{Collaborators: None}
+\newcommand{\tabUnit}{3ex}
+\newcommand{\tabT}{\hspace*{\tabUnit}}
+
+\title{6.869 PSET 8}
+
+\begin{document}
+
+\handout{Problem Set \theproblemsetnum}{Nov 20, 2014 (1:00pm)}
+\tabT Resources with corresponding images and code are on Stellar under \texttt{andrewmo@mit.edu}.  The files are in the \texttt{pset8.zip} folder.  To reproduce the below figures, run \texttt{demoMotion.m} and \texttt{makeMovie.m}.
+
+
+\section*{Problem 8.1}
+\tabT For this problem, we implement the Lucas-Kanade (LK) optical flow algorithm.  We will do so using the coarse-to-fine approach, which will be explained in the next section.
+\newline
+
+\textbf{(A)} Given two images $I_1$ and $I_2$ as well as the initial flow $(u0,v0)$, we can compute the optical flow $(u,v)$ from image $I_2$ to $I_1$ using Lucas-Kanade.  With $I_{x}(q_{i})$, $I_{y}(q_{i})$, $I_{t}(q_{i})$ representing the partial derviatives of image $I$ with respect to $x$, $y$, and $t$; the solution can be viewed as solving the following 2 by 2 system of equations as shown below:
+\newline
+$$
+\begin{bmatrix}
+du \\[0.3em]
+dv \\[0.3em]
+\end{bmatrix}
+=
+\begin{bmatrix}
+\sum\limits_{i} I_{x}(q_{i})^{2}  &  \sum\limits_{i} I_{x}(q_{i})I_{y}(q_{i})\\[0.3em]
+\sum\limits_{i} I_{y}(q_{i})I_{x}(q_{i})  &  \sum\limits_{i} I_{y}(q_{i})^{2}
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+-\sum\limits_{i} I_{x}(q_{i})I_{t}(q_{i}) \\[0.3em]
+-\sum\limits_{i} I_{y}(q_{i})I_{t}(q_{i})
+\end{bmatrix}
+$$
+
+The varaiable $q_{i}$ is the nieghborhood of pixels in a specified patch.  The derivates were calcuated as followed:\newline\newline
+\texttt{[Ix, Iy] = gradient(I2);}\newline    
+\texttt{It = warpI2 - I1;}\newline
+
+Using the vectorized version, you can evaluate the velocity vector $(du, dv)$ explicity.  Below is some code that solves for $(u,v)$ in a vectorized manner.\newline\newline
+\texttt{det = Ixx.*Iyy - Ixy.*Ixy;}\newline
+\texttt{u = (-Iyy.*Ixt + Ixy.*Iyt )./det;}\newline
+\texttt{v = ( Ixt.*Ixy - Ixx.*Iyt )./det;}\newline
+
+warpI2 is the warped I2 image using the updated flow field on each iteration.  We iterate multiple times in order to get a better approximatin of the optical flow field.
+\newline
+
+\textbf{(B)} Using the Lucas-Kanade implementation, we can apply the coarse-to-fine algorithm (which utilizes Gaussian pyramids) to get the desired results.  This is due to the fact that Lucas-Kanade is a greedy algorithm that converges to the local minimum.  Below is reeated psuedocode on how the algorithm works:\newline\newline
+
+\textbf{Algorithm 1} Coarse-to-Fine-LK($I_{1}, I_{2},k$)
+\begin{enumerate}
+ \item Build k-level Gaussian pyramids $G_{1}, G_{2}$ for $I_{1}, I_{2}$
+ \item Find the optical flow field $(u_{k}, v_{k})$ from $G_{2}^{k}$ to $G_{1}^{k}$ at the coarsest pyramid level $k$ using the Lucas-Kanade algorithm
+ \item Upsample the flow field for level $k-1$, and transform $G_{2}^{k-1}$ towards $G_{1}^{k-1}$ using $(u_{k-1}, v_{k-1})$
+ \item Update the optical flow estimation $(u_{k-1}, v_{k-1})$ at level $k-1$
+ \item Repeat $3-4$ for levels $k-2, k-3, . . . , 1$\newline
+ \end{enumerate}
+
+ \textbf{(B)} Below are the results after running \texttt{demoMotion.m}:\newline
+
+\begin{figure*}[h]
+  \begin{center}
+    %\fbox{\rule{0pt}{2in} \rule{0.9\linewidth}{0pt}}
+    \includegraphics[width=0.4\linewidth, trim= 0pt 80pt 0pt 80pt, clip]{car1.jpg}
+    \includegraphics[width=0.4\linewidth, trim= 0pt 80pt 0pt 80pt, clip]{car2.jpg}
+
+  \end{center}
+  \caption{Original sequence of images for car (left) frame 1 of \texttt{car1.jpg} and (right) frame 2 of \texttt{car2.jpg}.}
+  \label{fig:pipeline}
+\end{figure*}
+
+\begin{figure*}[h]
+  \begin{center}
+    %\fbox{\rule{0pt}{2in} \rule{0.9\linewidth}{0pt}}
+    \includegraphics[width=0.4\linewidth, trim= 80pt 80pt 80pt 80pt, clip]{frame1.png}
+    \includegraphics[width=0.4\linewidth, trim= 80pt 80pt 80pt 80pt, clip]{warped_frame2.png}
+
+  \end{center}
+  \caption{Results after running Coarse\-to\-Fine LR with Median Filtering. (left) \texttt{frame1.png} and (right) \texttt{warped\_frame2.png}.}
+  \label{fig:pipeline}
+\end{figure*}
+
+\begin{figure*}[t]
+  \begin{center}
+    %\fbox{\rule{0pt}{2in} \rule{0.9\linewidth}{0pt}}
+    \includegraphics[width=0.6\linewidth, trim= 80pt 80pt 80pt 80pt, clip]{flow_field.png}
+
+  \end{center}
+  \caption{Visualization of the optical flow field (\texttt{flow\_field.png}).}
+  \label{fig:pipeline}
+\end{figure*}
+
+\section*{Problem 8.2}
+\tabT For this problem, we would like to extend our Coarse-to-Fine with Lucas-Kanade (LK) optical flow algorithm to undergoe motion magnification.
+\newline
+
+\textbf{(A)} Using $I$ as the input video sequence, $\alpha$ as the scaled gain, and $\tau$ as the threshold; the Simple Motion Magnification pseudocode is defined as follows:\newline\newline
+
+\textbf{Algorithm 2} Simple-Motion-Magniication($I, \alpha, \tau$)
+\begin{enumerate}
+  \item Estimate the motion $(u_{t}, v_{t})$ between frame $I_{1}$ and each frame $I_{t}$ in $I$.
+  \item Modify the flow fields according to
+  \[
+    {(u_{t}^{'}, v_{t}^{'})_{p}}=
+    \begin{dcases}
+      {\alpha (u_{t},v_{t})_{p}}, & ||(u_{t},v_{t})_{p}|| \leq \tau \\
+      (u_{t},v_{t})_{p}, & \text{otherwise}
+    \end{dcases}
+  \]
+  \item Generate the motion-magnified sequence by warping $I_{1}$ according to $(u_{t}^{'},v_{t}^{'})$ for each t.
+ \end{enumerate}
+
+ Figure 4 shows the results of magnifying the motion in the \texttt{/bookshelf} driectory.  This was done with $\alpha = 10$, $\tau = 2$.  There are some noticeable artifacts near the hand and arm, however, most flow is correctly represented in the attached video \texttt{bookshelfMagMovie.avi} \newline
+
+\begin{figure*}[h]
+  \begin{center}
+    %\fbox{\rule{0pt}{2in} \rule{0.9\linewidth}{0pt}}
+    \includegraphics[width=0.45\linewidth, trim= 80pt 80pt 80pt 80pt, clip]{bookshelfMag/image1.jpg}
+    \includegraphics[width=0.45\linewidth, trim= 80pt 80pt 80pt 80pt, clip]{bookshelfMag/image17.jpg} \\
+    \includegraphics[width=0.45\linewidth, trim= 80pt 80pt 80pt 80pt, clip]{bookshelfMag/image3.jpg}
+    \includegraphics[width=0.45\linewidth, trim= 80pt 80pt 80pt 80pt, clip]{bookshelfMag/image19.jpg} \\
+    \includegraphics[width=0.45\linewidth, trim= 80pt 80pt 80pt 80pt, clip]{bookshelfMag/image5.jpg}
+    \includegraphics[width=0.45\linewidth, trim= 80pt 80pt 80pt 80pt, clip]{bookshelfMag/image21.jpg} \\
+    \includegraphics[width=0.45\linewidth, trim= 80pt 80pt 80pt 80pt, clip]{bookshelfMag/image7.jpg}
+    \includegraphics[width=0.45\linewidth, trim= 80pt 80pt 80pt 80pt, clip]{bookshelfMag/image23.jpg} \\
+    \includegraphics[width=0.45\linewidth, trim= 80pt 80pt 80pt 80pt, clip]{bookshelfMag/image9.jpg}
+    \includegraphics[width=0.45\linewidth, trim= 80pt 80pt 80pt 80pt, clip]{bookshelfMag/image25.jpg} \\
+    \includegraphics[width=0.45\linewidth, trim= 80pt 80pt 80pt 80pt, clip]{bookshelfMag/image11.jpg}
+    \includegraphics[width=0.45\linewidth, trim= 80pt 80pt 80pt 80pt, clip]{bookshelfMag/image27.jpg} \\
+    \includegraphics[width=0.45\linewidth, trim= 80pt 80pt 80pt 80pt, clip]{bookshelfMag/image13.jpg}
+    \includegraphics[width=0.45\linewidth, trim= 80pt 80pt 80pt 80pt, clip]{bookshelfMag/image29.jpg} \\
+    \includegraphics[width=0.45\linewidth, trim= 80pt 80pt 80pt 80pt, clip]{bookshelfMag/image15.jpg}
+    \includegraphics[width=0.45\linewidth, trim= 80pt 80pt 80pt 80pt, clip]{bookshelfMag/image31.jpg} \\
+
+  \end{center}
+  \caption{Results after \texttt{makeMovie.m}.  We display the odd frames out of the original 44.  Side by side, we display the magnified frame in the left half of the movie and the original in the right half.  Left column displays frames 1 to 15, right column displays frames 17 to 31.}
+  \label{fig:pipeline}
+\end{figure*}
+
+
+\textbf{(B)} Optional
+
+% \textbf{(C)} This question pertains to the function \texttt{H = FitHomograohy(x1, x2)}. Given a set of points from two images, we want to compute the homography from the set of points from the overlapped image to the original.  This can be reduced to solving a least squares problem.  We would like to minimize $||Ah = 0||^{2}$, where $Ah=0$ is defined below.\newline
+% $$
+% \begin{bmatrix}
+% x_n & y_n & 1 & 0 & 0 & 0 & -x_{n}'x_{n} & -x_{n}'y_{n} & -x_{n}' \\[0.3em]
+% 0 & 0 & 0 & x_n & y_n & 1 & -y_{n}'x_{n} & -y_{n}'y_{n} & -y_{n}' \\[0.3em]
+% ...
+% \end{bmatrix}
+% \begin{bmatrix}
+% h_{00} \\[0.3em]
+% ... \\[0.3em]
+% h_{22}
+% \end{bmatrix}
+% =
+% \begin{bmatrix}
+% 0 \\[0.3em]
+% ... \\[0.3em]
+% 0
+% \end{bmatrix}
+% $$
+% \newline
+% A is a $2n$x$9$ matrix and h is a $9$x$1$ matrix.  The solution is the unit vector of $h$, which is the eigenvector of $A^{T}A$ with the smallest eigenvalue. Normalization is necessary to account for scaling (ensures third component of 3D point is 1).\newline
+
+% \textbf{(D)} This question pertains to \texttt{H = TransformRANSAC(x1, x2)}.  To make the algorithm more robust from outliers, the goal is to perform RANSAC to get the best homography H with the least probablity of error.  In addition to the input and output points for the corresponding images, tunable parameters to the algorithm are necessary and shown below.\newline\newline
+% \texttt{
+% \textbf{Niter = 10000;}      \%Number of iterations\newline
+% \textbf{epsilon = 10;}       \%Distance threshold when determining if inlier\newline 
+% \textbf{P = 4;}              \%Number of samples to use when fitting H to best seen so far\newline
+% \textbf{acceptableProbFailure = 1e-9;}   \%Acceptable probability of failure\newline
+% }
+% \newline
+% Best results were seen with 10000 iterations and an $\epsilon$ of 10, however, for reasonably quick results, 1000 iterations and an $\epsilon$ of 20 was used (Please refer to below figures for results).  For P, At least 4 sample points is needed to solve the least squares equation.  The acceptable probability of failure was arbitrary.  When running RANSAC, we want to limit the failure rate.  This can be accounted for by performing $P(failure) = (1-G^P)^i$, where $G$ is the percentage of inliers to total points and $i$ is the number of iterations seen thus far.  Please refer to \texttt{TransformRANSAC.m} for a better description/overview of the algorithm.\newline
+
+% \textbf{(E)} This question pertains to \texttt{im = MakePanorama(im1, im2, H)}.  The goal is now to produce a panoramic stitch of a H transformed version of im2 onto im1.  To get padding working correctly, I utilized the built-in MATLAB function \texttt{imtransform}.  Therefore, a transformed version of an image can be easily implemented as seen below.\newline\newline
+% \texttt{
+% T=maketform('projective',H);\newline
+% im2t=imtransform(im2,T,'XYScale',1); %Adjust for scaling
+% }
+% \newline
+
+% \begin{figure*}[h]
+%   \begin{center}
+%     %\fbox{\rule{0pt}{2in} \rule{0.9\linewidth}{0pt}}
+%     \includegraphics[width=.65\linewidth, trim= 0pt 20pt 0pt 20pt, clip]{im2t.png}
+
+%   \end{center}
+%   \caption{Transformed image of \texttt{seoul2.jpg} after applying H optimized by RANSAC. }
+%   \label{fig:pipeline}
+% \end{figure*}
+
+% \textbf{(F)} This question pertains to the function \texttt{im = Photomerge(im1, im2)}. This combines the previous parts where an overall panorama is produced given two images.  The first image is used as reference.  The summarized steps to produce the panorama is as follows:
+
+% \begin{itemize}
+%   \item Produce matches/correspondecies by running SIFT
+%   \item Extract points \texttt{x1,x2} from matches.
+%   \item Get H: \texttt{H = TransformRANSAC(x2,x1)} (want to transform im2)
+%   \item Get stitched image: \texttt{im = MakePanorama(im1, im2, H)} 
+% \end{itemize}
+
+% \begin{figure*}[h]
+%   \begin{center}
+%     \includegraphics[width=.75\linewidth, trim= 0pt 20pt 0pt 20pt, clip]{pano_2.png}
+
+%   \end{center}
+%   \caption{Results after running \texttt{PhotoMerge.m} on the first two seoul images.  This used $N=1000, \epsilon=20$.}
+%   \label{fig:pipeline}
+% \end{figure*}
+
+% \textbf{(G)} This question pertains to the function \texttt{im = PanoramaN({im1, im2, ..., imN})}. This function creates a panorama from multiple images and sets the middle image in the list as reference.  Refer to \texttt{PanoramaN.m} for implementation.  Basically, I perform \texttt{PhotoMerge} N-1 times, keeping track which image (left onto right, right onto left) needs to be performed.  Refer to Figure 5 for images $n>2$ resulting panoramas.  It should be noted that when stitching images together, it was necessary to blend pixels as best we could.  It is important that both images are of the same dimension, with added padding if necessary.  When images intersect, take the average of both images.  If they don't intersect, take the value of the valid image.  A summary of choosing/blending pixels is shown below, taking advantage of masking.\newline
+
+% $I_{out} = I_{1}(M_{1} \& \sim M_{2}) + I_{2}(M_{2} \& \sim M_{1}) + 
+% (I_{1}/2 + I_{2}/2)(M_{1} \& M_{2})$
+
+% \begin{figure*}[h]
+%   \begin{center}
+%     \includegraphics[width=.75\linewidth, trim= 0pt 20pt 0pt 20pt, clip]{pano_3.png}
+%     \includegraphics[width=.52\linewidth, trim= 0pt 20pt 0pt 20pt, clip]{pano_4.png}
+
+%   \end{center}
+%   \caption{Results after running \texttt{PanoramaN.m} on the 3 seoul images (top) and the 4 riverbed images (bottom).  They both used used $N=10000, \epsilon=10$. Note: with more images used, stitching and finding inliers relies on the parameters used, therefore, some artifacts may exist.}
+% \end{figure*}
+
+% \textbf{(H)(i)} This question pertains to why a homography suffices for aligning two images.  Let $P_{1} = K[I|t_{1}]$ and $P_{2} = K[R|t_{2}]$ be the corresponding camera matrices. Let $x_{1} = P_{1}X$ and $x_{2} = P_{2}X$. Show that there exists a homography $H$ such that $x_{2} = Hx_{1}$.\newline
+
+% \hspace{40pt} $x_{2} = Hx_{1}$\newline
+% \hangindent5em $P_{2}X = HP_{1}X$\newline
+% \hangindent5em $K[I|t_{1}]X = HK[R|t_{2}]X$, apply substitutions\newline
+% \hangindent5em $K[R|t_{2}]^{-1} K[I|t_{1}] X  = HX$, apply inverse rotation matrix\newline
+% \hangindent5em $ K[R|t_{2}]^{-1} K[I|t_{1}] X X' = H$, where $X'=X^{-1}$ (inverse 3D world point)\newline
+
+% This shows that there exists a homography H that does the transformation from $x_{1}$ to $x_{2}$.\newline\newline
+% \textbf{(H)(ii)} Optional.
+
+
+
+\end{document}

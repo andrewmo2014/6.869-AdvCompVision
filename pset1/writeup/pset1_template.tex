@@ -1,0 +1,183 @@
+
+%
+% 6.869 problem set 1
+%
+\documentclass[12pt,twoside]{article}
+
+\usepackage{amsmath}
+\usepackage{color}
+\usepackage{clrscode}
+\usepackage[pdftex]{graphicx}
+
+\input{macros}
+
+\setlength{\oddsidemargin}{0pt}
+\setlength{\evensidemargin}{0pt}
+\setlength{\textwidth}{6.5in}
+\setlength{\topmargin}{0in}
+\setlength{\textheight}{8.5in}
+
+\newcommand{\theproblemsetnum}{1}
+\newcommand{\partaduedate}{Sept 11, 2014 (1:00pm)}
+\newcommand{\collabs}{Collaborators: Julian Gonzalez}
+\newcommand{\tabUnit}{3ex}
+\newcommand{\tabT}{\hspace*{\tabUnit}}
+
+\title{6.869 PSET 1}
+
+\begin{document}
+
+\handout{Problem Set \theproblemsetnum}{Sept 11, 2014 (1:00pm)}
+
+\section*{Problem 1}
+\tabT \textbf{(optional)}
+
+\section*{Problem 2}
+\tabT Deriving the Orthographic projection equations from 3D world space coordinates to image coordinates requires applying both rotations and translations.  Scaling with $\alpha$ is necessary for sizing and pixelation.
+
+$$
+\alpha
+\begin{pmatrix}
+\begin{bmatrix}
+R
+\end{bmatrix}
+\begin{bmatrix}
+X \\
+Y \\
+Z
+\end{bmatrix}
+\end{pmatrix}
++
+\begin{bmatrix}
+t
+\end{bmatrix}
+= 
+\begin{bmatrix}
+x \\
+y \\
+z
+\end{bmatrix}
+$$
+
+The rotation is $\theta$ degress along the X-axis, and the translation is the image offset ($x_o$, $y_o$) and $\frac{Z}{\cos{\theta}}$ along the Z axis (hypotenuse of similar triangle with base Z at angle $\theta$.
+
+$$
+\alpha
+\begin{pmatrix}
+\begin{bmatrix}
+1 & 0 & 0 \\
+0 & \cos{\theta} & -\sin{\theta} \\
+0 & \sin{\theta} & \cos{\theta} \\
+\end{bmatrix}
+\begin{bmatrix}
+X \\
+Y \\
+Z
+\end{bmatrix}
+\end{pmatrix}
++
+\begin{bmatrix}
+x_o\\
+y_o\\
+\frac{Z}{\cos{\theta}}
+\end{bmatrix}
+= 
+\begin{bmatrix}
+x \\
+y \\
+z
+\end{bmatrix}
+$$
+
+As a result, we get the same equations for $x$ (1.2) and $y$ (1.3) of the chapter.
+$$
+\begin{pmatrix}
+\alpha X + x_o \\
+\alpha( \cos{\theta}Y - \sin{\theta}Z ) + y_o
+\end{pmatrix}
+=
+\begin{pmatrix}
+x \\
+y
+\end{pmatrix}
+$$
+
+\section*{Problem 3}
+\tabT Deriving the constraints for Z is obtained using the same approach for calculating those for Y.
+\begin{center}
+$Z = -\frac{y-y_o}{\alpha\sin{\theta}} + \frac{\cos{\theta}}{\sin{\theta}}Y$
+\end{center}
+
+$\frac{\partial Z}{\partial y} = -\frac{1}{\sin{\theta}}$ \newline
+\tabT$\frac{\partial Z}{\partial t} = \bigtriangledown Z \cdot t$ where t is direction tangent to 3D horizontal, $(-n_y, n_x)$ \newline
+\tabT\tabT $= -n_y\frac{\partial Z}{\partial x} + n_x\frac{\partial Z}{\partial y} = -n_y\frac{\partial Z}{\partial x} + -n_x\frac{1}{\sin{\theta}}$
+
+$\frac{\partial^2 Z}{\partial x^x} = 0$ \newline
+\tabT$\frac{\partial^2 Z}{\partial y^2} = \frac{\partial Z}{\partial y}(-\frac{1}{\sin{\theta}}) = 0$ \newline
+\tabT$\frac{\partial^2 Z}{\partial y \partial x} = \frac{\partial Z}{\partial x}(-\frac{1}{\sin{\theta}}) = 0$ \newline
+
+\section*{Problem 4}
+\tabT Line 166 corresponds to the constraint $\frac{\partial Y}{\partial t} = -n_y\frac{\partial Y}{\partial x} + n_x\frac{\partial Y}{\partial y}$:\newline
+\texttt{Aij(:,:,c) =} \newline 
+\tabT\texttt{-dy*[-1 0 1; -2 0 2; -1 0 1]/8 + dx*[-1 -2 -1; 0 0 0; 1 2 1]/8;} \newline
+\tabT Line 180 coresponds to the contraint $\frac{\partial^2 Y}{\partial y^2} = 2Y(x,y) - Y(x,y+1) - Y(x, y-1)$ :\newline
+\texttt{Aij(:,:,c) =} \newline 
+\tabT\texttt{Aij(:,:,c) = 0.1*[0 -1 0; 0 2 0; 0 -1 0];}
+
+\section*{Problem 5}
+Viewpoints for \textbf{img1.jpg} and \textbf{img2.jpg} after running the code:
+\newline
+\newline
+\tabT\tabT\tabT \textbf{img1}: input
+\tabT\tabT\tabT\tabT\tabT \textbf{img1}: view 1
+\tabT\tabT\tabT\tabT\tabT \textbf{img1}: view 2 
+\newline
+
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+\includegraphics[width = 120pt]{img1}
+\includegraphics[width = 165pt]{img1_cv1}
+\includegraphics[width = 165pt]{img1_cv2}
+\newline
+
+\tabT\tabT \textbf{img}: input
+\tabT\tabT\tabT\tabT\tabT \textbf{img2}: view 1
+\tabT\tabT\tabT\tabT\tabT \textbf{img2}: view 2 
+\newline
+
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+\includegraphics[width = 120pt]{img2}
+\includegraphics[width = 165pt]{img2_cv1}
+\includegraphics[width = 165pt]{img2_cv2}
+
+\section*{Problem 6}
+Below is an example where 3D reconstruction fails.
+\newline
+\newline
+\tabT\tabT\tabT \textbf{img4}: input
+\tabT\tabT\tabT\tabT\tabT \textbf{img4}: view 1
+\tabT\tabT\tabT\tabT\tabT \textbf{img4}: view 2 
+\newline
+
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+\includegraphics[width = 120pt]{img4}
+\includegraphics[width = 165pt]{img4_cv1}
+\includegraphics[width = 165pt]{img4_cv2}
+\newline
+\newline
+The construction of the blue and orange objects are good, however, that of the green cube fails.  The cube is flatened and is part of the ground plane.  This can be explained by examing the ground and contact boundaries pictured below.  With the combination of one of the cube's contact edges not being bold enough and the face having a bright reflective color due to the positioning of the light source, the threshold separating the ground from the objects in the scene is too low for one of the cube's faces. The gradient between the cube's brightened face and the ground is low enough that it is considered part of the ground.
+\newline
+\newline
+\tabT\tabT\tabT\tabT\tabT \textbf{img4}: ground
+\tabT\tabT\tabT\tabT\tabT \textbf{img4}: contact edges 
+\newline
+
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+\tabT\tabT
+\includegraphics[width = 165pt]{img4_g}
+\includegraphics[width = 165pt]{img4_ce}
+
+\section*{Problem 7}
+\tabT \textbf{(optional)}
+
+
+\end{document}

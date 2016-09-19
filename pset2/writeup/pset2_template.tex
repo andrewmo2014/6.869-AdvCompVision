@@ -1,0 +1,219 @@
+
+%
+% 6.869 problem set 1
+%
+\documentclass[12pt,twoside]{article}
+
+\usepackage{amsmath}
+\usepackage{color}
+\usepackage{clrscode}
+\usepackage[pdftex]{graphicx}
+
+\input{macros}
+
+\setlength{\oddsidemargin}{0pt}
+\setlength{\evensidemargin}{0pt}
+\setlength{\textwidth}{6.5in}
+\setlength{\topmargin}{0in}
+\setlength{\textheight}{8.5in}
+
+\newcommand{\theproblemsetnum}{2}
+\newcommand{\partaduedate}{Sept 18, 2014 (1:00pm)}
+\newcommand{\collabs}{Collaborators: None}
+\newcommand{\tabUnit}{3ex}
+\newcommand{\tabT}{\hspace*{\tabUnit}}
+
+\title{6.869 PSET 2}
+
+\begin{document}
+
+\handout{Problem Set \theproblemsetnum}{Sept 18, 2014 (1:00pm)}
+\tabT Resources with corresponding images and code are on Stellar under \texttt{andrewmo@mit.edu}.  The files are in the \texttt{pset2.zip} folder.  To reproduce the below figures, run \texttt{pset2main.m}.
+
+\section*{Problem 2.1}
+\tabT \textbf{(A)} Below are the laplacian pyramid decompositions broken up into 3 separate channels of the apple rgb image as the source image.  As you can tell, it reconstructs to the original image.
+\newline
+
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT \textbf{Input}
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT \textbf{Output}
+
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+\tabT\tabT\tabT\tabT\tabT
+\includegraphics[width = 150pt, trim = 0pt 50pt 0pt 0pt, clip]{appleInput}
+\includegraphics[width = 150pt, trim = 0pt 50pt 0pt 0pt, clip]{appleOutput}
+
+\tabT\tabT\tabT \textbf{LPyr}: Red
+\tabT\tabT\tabT\tabT\tabT\tabT \textbf{LPyr}: Green
+\tabT\tabT\tabT\tabT\tabT \textbf{LPyr}: Blue
+
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+\includegraphics[width = 150pt, trim = 100pt 100pt 100pt 100pt, clip]{appleLR}
+\includegraphics[width = 150pt, trim = 100pt 100pt 100pt 100pt, clip]{appleLG}
+\includegraphics[width = 150pt, trim = 100pt 100pt 100pt 100pt, clip]{appleLB}
+\newline
+
+\tabT \textbf{(B)} Below are the source images, their Laplacian pyramids, blending mask, and resulting blended image.
+\newline
+
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT \textbf{IM1}
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT \textbf{IM2}
+\newline
+
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+\tabT\tabT\tabT\tabT\tabT
+\includegraphics[width = 150pt]{andremo_pic}
+\includegraphics[width = 150pt]{toast}
+\newline
+
+\tabT\tabT\textbf{IM1 LPyr}: Red
+\tabT\tabT\tabT\tabT \textbf{IM1 LPyr}: Green
+\tabT\tabT\tabT\tabT \textbf{IM1 LPyr}: Blue
+
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+\includegraphics[width = 150pt]{andremo_lpyr_r}
+\includegraphics[width = 150pt]{andremo_lpyr_g}
+\includegraphics[width = 150pt]{andremo_lpyr_b}
+
+\tabT\tabT \textbf{IM2 LPyr}: Red
+\tabT\tabT\tabT\tabT \textbf{IM2 LPyr}: Green
+\tabT\tabT\tabT\tabT \textbf{IM2 LPyr}: Blue
+
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+\includegraphics[width = 150pt]{toast_lpyr_r}
+\includegraphics[width = 150pt]{toast_lpyr_r}
+\includegraphics[width = 150pt]{toast_lpyr_r}
+
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT \textbf{Mask}
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT \textbf{Output}
+
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+\tabT\tabT\tabT\tabT\tabT
+\includegraphics[width = 150pt]{lmask}
+\includegraphics[width = 150pt]{lblended_image}
+
+
+\section*{Problem 2.2}
+\tabT Below are the source images, the resulting hybrid image, and a blurred version at level 3 of the pyramid.  Following the SIGGRAPH paper, I worked in in the frequency domain to manipulate the images with specific low/high cutoff frequencies.  The original closer image has the husky most prominent, however, the farther away you are from the image and more blurred it is, the face is more prominent.
+\newline
+
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+\hspace*{-20pt}
+\includegraphics[width = 120pt, trim = 0pt 0pt 0pt 0pt, clip]{husky}
+\includegraphics[width = 120pt]{andremo_pic}
+\includegraphics[scale = .27, trim = 75pt 50pt 75pt 0pt, clip]{close_hybrid_image}
+\includegraphics[scale = .7, trim = 75pt 50pt 20pt 20pt, clip]{far_hybrid_image}
+\newline
+\tabT\tabT\tabT \textbf{IMA}
+\tabT\tabT\tabT\tabT\tabT\tabT \textbf{IMB}
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT \textbf{CLOSE}
+\tabT\tabT\tabT\tabT \textbf{FAR}
+
+
+\section*{Problem 2.3}
+\tabT \textbf{(A)(i)} Prove $f \ast g = g \ast f$: (Convolution is commutative)
+\newline
+\newline
+\tabT\tabT\tabT Use change of variable, let $j=t-j$. \newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT
+$(f \ast g)[t] = \sum_{j=-\infty}^{\infty}f[t-j]g[j]$ \newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT
+$= \sum_{j=\infty}^{-\infty}f[j]g[t-j]$ \newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT
+$= \sum_{j=-\infty}^{\infty}g[t-j]f[j]$ \newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT
+$= (g \ast f)[t]$ \newline
+
+\textbf{(ii)} Prove $(f \ast g) \ast h = f \ast (g \ast h)$: (Convolution is associative) \newline
+\newline
+\tabT\tabT\tabT\tabT\tabT\tabT
+$f \ast (g \ast h)[t] = f[t] \ast (\sum_{j=-\infty}^{\infty}g[t-j]h[j])$ \newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT
+$= \sum_{k=-\infty}^{\infty} f[k] (\sum_{j=-\infty}^{\infty}g[t-k-j]h[j])$ \newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT
+$= \sum_{k=-\infty}^{\infty} \sum_{j=-\infty}^{\infty} f[k]g[t-k-j]h[j])$, Let $j=j-k$ \newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT
+$= \sum_{k=-\infty}^{\infty} \sum_{j=-\infty}^{\infty} f[k]g[j-k]h[t-j])$ \newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT
+$= \sum_{j=-\infty}^{\infty} (\sum_{k=-\infty}^{\infty} f[k]g[j-k])h[t-j])$ \newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT
+$= \sum_{j=-\infty}^{\infty} (f \ast g[j]) h[t-j])$ \newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT
+$= (f \ast g) \ast h[t]$ \newline
+
+\textbf{(iii)} Show that if $f$ is separable, then the 2D convolution $G \ast f$ can be computed as a sequence of two 1D convolutions. \newline
+\newline
+\tabT\tabT\tabT\tabT\tabT\tabT
+Since $f=uv^{T}$, it is separable to $f_{1}$ of size (U x 1) and $f_{2}$ of size (1 x V) \newline
+\tabT\tabT\tabT\tabT\tabT\tabT
+$G \ast f[u,v] = \sum_{j=-\infty}^{\infty} \sum_{i=-\infty}^{\infty} G[i,j]f[u-i,v-j]$ \newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT
+$= \sum_{j=-\infty}^{\infty} \sum_{i=-\infty}^{\infty} f[i,j]G[u-i,v-j]$, by commutativity \newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT
+$= \sum_{j=-\infty}^{\infty} \sum_{i=-\infty}^{\infty} f_{1}[i]f_{2}[j]G[u-i,v-j]$, by separability \newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT
+$= \sum_{j=-\infty}^{\infty} f_{2}[j] (\sum_{i=-\infty}^{\infty} f_{1}[i]G[u-i,v-j])$ \newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT
+$= \sum_{j=-\infty}^{\infty} f_{2}[j] (f_{1}[i] \ast G[u-i,v-j])$ \newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT
+$= f_{2}[j] \ast f_{1}[i] \ast G[u-i,v-j]$ \newline
+\newline
+Above shows that separable 2D convolution is a sequence of two 1D convultions (one vertically, one horizontally) and can be performed in any order due to the proof of associativity.
+\newline
+\newline
+
+\textbf{(B)} Match the images to the log of the magnitude of their Fourier Transform.
+\newline
+\newline
+\tabT \textbf{(1):D}
+\newline
+\tabT The brick wall is a grid with vertical and horizontal lines, however, the horizontal lines are more consistent/unform than the vertical lines.  Therefore, the FFT will have a magnitude where the vertical more prominent than the horizontal.
+\newline 
+\tabT \textbf{(2):A}
+\newline
+\tabT The grass is very uniform with no fine edges.  Therefore the FFT will be uniform as well.  The FT magnitude will be the highest in the center but decrease radially outwards.
+\newline 
+\tabT \textbf{(3):C}
+\newline
+\tabT The rocks are organized in a loose grid with fine edges.  Because the rocks have a generally round shape, they would have a FFT that radially decreases from the center.  The fine edges show prominence in the vertical and horizontal directions of the FFT.
+\newline 
+\tabT \textbf{(4):B}
+\newline
+\tabT The street light and wire are angled which is noticable in its FFT.  The pole is angled about 75 degress from the horizontal and the wire/light is angled about -45 degress from teh horizontal.  Image B shows the strongest magnitides at the 75 degrees from the vertical and -45 degrees from the vertical. 
+\newline 
+\tabT \textbf{(5):E}
+\newline
+\tabT The honeycomb grid is very organized and has constistency along multiple directions.  There are fine adges that go along the vertical and horizontal directions.  However, the shape of each honeycomb is consistent with symmtrical sides (some angled 45 from the vertical and horizontal axiis).  Therefore the FFT will show a strong magnitude in the vertical/horizontal driections, as well as the 45 degrees from both axiis.  This is depicted in Image E.
+\newline
+
+\section*{Problem 2.4}
+\tabT Steerable filters as decribed by Freeman and Adelson.  There may be slight deviation when comparing my images to the staff's due to choice of epsilon.  Using Einstein's portrait as input, the below figures show G2 steered in the dominant and perpendicular directions (original, normalized, mean-filtered). 
+\newline
+
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+\tabT\tabT \textbf{INPUT}
+\tabT\tabT\tabT\tabT\tabT\tabT \textbf{G2}: dominant
+\tabT\tabT\tabT\tabT\tabT\tabT \textbf{G2}: perpedicular
+\newline
+\includegraphics[scale = .2, trim = 0pt -130pt 0pt 0pt, clip]{einstein}
+\includegraphics[width = 168pt, trim = 80pt 20pt 100pt 30pt, clip]{G2d}
+\includegraphics[width = 168pt, trim = 80pt 20pt 100pt 30pt, clip]{G2p}
+\newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT
+\tabT\tabT\tabT\tabT \textbf{G2}: dominant norm
+\tabT\tabT\tabT\tabT \textbf{G2}: perpedicular norm
+\newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT
+\includegraphics[width = 168pt, trim = 80pt 20pt 100pt 30pt, clip]{G2dn}
+\includegraphics[width = 168pt, trim = 80pt 20pt 100pt 30pt, clip]{G2pn}
+\newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT 
+\tabT\tabT \textbf{G2}: dominant norm mean
+\tabT\tabT \textbf{G2}: perpedicular norm mean
+\newline
+\tabT\tabT\tabT\tabT\tabT\tabT\tabT\tabT
+\includegraphics[width = 168pt, trim = 80pt 20pt 100pt 30pt, clip]{G2dnm}
+\includegraphics[width = 168pt, trim = 80pt 20pt 100pt 30pt, clip]{G2pnm}
+
+
+
+\end{document}
